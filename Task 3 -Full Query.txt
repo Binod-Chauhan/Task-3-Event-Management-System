@@ -1,0 +1,94 @@
+-- Create database
+CREATE DATABASE "EventsManagement";
+
+-- Create Events table
+CREATE TABLE IF NOT EXISTS "Events" (
+    "Event_Id" SERIAL PRIMARY KEY,
+    "Event_Name" VARCHAR(100) NOT NULL,
+    "Event_Date" DATE NOT NULL,
+    "Event_Location" VARCHAR(100) NOT NULL,
+    "Event_Description" TEXT
+);
+
+-- Create Attendees table
+CREATE TABLE IF NOT EXISTS "Attendees" (
+    "Attendee_Id" SERIAL PRIMARY KEY,
+    "Attendee_Name" VARCHAR(100) NOT NULL,
+    "Attendee_Phone" VARCHAR(15),
+    "Attendee_Email" VARCHAR(100) UNIQUE,
+    "Attendee_City" VARCHAR(50)
+);
+
+-- Create Registrations table
+CREATE TABLE IF NOT EXISTS "Registrations" (
+    "Registration_Id" SERIAL PRIMARY KEY,
+    "Event_Id" INT NOT NULL,
+    "Attendee_Id" INT NOT NULL,
+    "Registration_Date" DATE NOT NULL,
+    "Registration_Amount" NUMERIC(10, 2),
+    FOREIGN KEY ("Event_Id") REFERENCES "Events"("Event_Id"),
+    FOREIGN KEY ("Attendee_Id") REFERENCES "Attendees"("Attendee_Id")
+);
+
+-- Insert sample events
+INSERT INTO "Events" ("Event_Name", "Event_Date", "Event_Location", "Event_Description") VALUES
+('Tech Summit 2025', '2025-07-10', 'Bangalore', 'A national-level tech innovation event.'),
+('Startup Pitch Fest', '2025-08-21', 'Delhi', 'Startups present business ideas to investors.'),
+('Green Future Expo', '2025-09-15', 'Hyderabad', 'A sustainability and green tech exhibition.');
+
+-- Insert sample attendees
+INSERT INTO "Attendees" ("Attendee_Name", "Attendee_Phone", "Attendee_Email", "Attendee_City") VALUES
+('Ankit Sharma', '9876543210', 'ankit@example.com', 'Delhi'),
+('Riya Kapoor', '9123456789', 'riya@example.com', 'Mumbai'),
+('Mohit Verma', '9988776655', 'mohit@example.com', 'Pune');
+
+-- Insert sample registrations
+INSERT INTO "Registrations" ("Event_Id", "Attendee_Id", "Registration_Date", "Registration_Amount") VALUES
+(1, 1, '2025-06-01', 500.00),
+(2, 2, '2025-06-15', 750.00),
+(3, 3, '2025-07-20', 600.00);
+
+
+-- a) Insert a new event
+INSERT INTO "Events" ("Event_Name", "Event_Date", "Event_Location", "Event_Description") VALUES
+('AI World Conference', '2025-10-05', 'Chennai', 'Global conference on AI trends.');
+
+-- b) Update event info
+UPDATE "Events"
+SET "Event_Location" = 'Virtual', "Event_Description" = 'Now a global online event.'
+WHERE "Event_Name" = 'Tech Summit 2025';
+
+-- Delete registrations linked to Event_Id = 3 (Green Future Expo)
+DELETE FROM "Registrations"
+WHERE "Event_Id" = 3;
+
+-- c) Delete an event
+DELETE FROM "Events"
+WHERE "Event_Name" = 'Green Future Expo';
+
+
+-- a) Insert a new attendee
+INSERT INTO "Attendees" ("Attendee_Name", "Attendee_Phone", "Attendee_Email", "Attendee_City") VALUES
+('Neha Joshi', '9812345678', 'neha@example.com', 'Jaipur');
+
+-- b) Register attendee for an event
+INSERT INTO "Registrations" ("Event_Id", "Attendee_Id", "Registration_Date", "Registration_Amount") VALUES
+(1, 4, '2025-06-30', 500.00);
+
+
+-- a) Retrieve all event details
+SELECT * FROM "Events";
+
+-- b) Generate attendee list for a specific event
+SELECT a."Attendee_Name", a."Attendee_Email", e."Event_Name"
+FROM "Registrations" r
+JOIN "Attendees" a ON r."Attendee_Id" = a."Attendee_Id"
+JOIN "Events" e ON r."Event_Id" = e."Event_Id"
+WHERE e."Event_Name" = 'Tech Summit 2025';
+
+-- c) Event attendance statistics (number of attendees per event)
+SELECT e."Event_Name", COUNT(r."Registration_Id") AS "Total_Attendees"
+FROM "Events" e
+LEFT JOIN "Registrations" r ON e."Event_Id" = r."Event_Id"
+GROUP BY e."Event_Name"
+ORDER BY "Total_Attendees" DESC;
